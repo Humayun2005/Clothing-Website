@@ -40,7 +40,7 @@ h2 {
 }
 
 h1 {
-    font-size: clamp(4rem, 8vw, 8.6rem)
+    font-size: clamp(2.9rem, 5.2vw, 6rem)
 }
 
 h2 {
@@ -65,11 +65,11 @@ select {
 }
 
 .site-header {
-    height: 82px;
+    min-height: 82px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 5vw;
+    padding: 12px 4vw;
     border-bottom: 1px solid #dcd2c6;
     background: var(--paper);
     position: sticky;
@@ -90,11 +90,11 @@ select {
 }
 
 .brand-mark {
-    width: 60px !important;
+    width: clamp(34px, 4vw, 56px) !important;
 }
 
 .brand-wordmark {
-    width: 170px !important;
+    width: clamp(100px, 13vw, 165px) !important;
 }
 
 .site-nav {
@@ -123,9 +123,18 @@ select {
     letter-spacing: .12em
 }
 
+.bag-icon,
 .header-whatsapp span:last-child {
     font-size: 17px;
     color: var(--terracotta)
+}
+
+.bag-icon,
+.whatsapp-icon {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    flex: 0 0 auto
 }
 
 .menu-toggle {
@@ -135,16 +144,17 @@ select {
 }
 
 .hero {
+    height: calc(100vh - 82px);
     min-height: calc(100vh - 82px);
     display: grid;
-    grid-template-columns: 1.05fr .95fr;
-    padding-left: 8vw;
+    grid-template-columns: minmax(300px, .9fr) minmax(0, 1.1fr);
+    padding-left: 2vw;
     position: relative;
     overflow: hidden
 }
 
 .hero-copy {
-    padding: 15vh 3rem 10vh 0;
+    padding: clamp(1.5rem, 2.8vw, 2.6rem) 0.5rem clamp(1rem, 2vw, 1.75rem) 1.5vw;
     align-self: center;
     position: relative;
     z-index: 1
@@ -160,28 +170,29 @@ select {
 }
 
 .eyebrow {
-    margin-bottom: 30px
+    margin-bottom: 18px
 }
 
 .hero-intro {
-    max-width: 390px;
+    max-width: 360px;
     color: var(--muted);
-    font-size: 16px;
-    margin-top: 36px
+    font-size: 15px;
+    margin-top: 16px
 }
 
 .hero-actions {
     display: flex;
     align-items: center;
-    gap: 28px;
-    margin-top: 38px
+    gap: 14px;
+    margin-top: 18px;
+    flex-wrap: wrap
 }
 
 .button {
     display: inline-flex;
     align-items: center;
-    gap: 30px;
-    padding: 16px 20px;
+    gap: 24px;
+    padding: 14px 18px;
     border: 0;
     text-transform: uppercase;
     letter-spacing: .12em;
@@ -224,7 +235,8 @@ select {
 
 .hero-image-wrap {
     position: relative;
-    min-height: 720px;
+    height: 100%;
+    min-height: calc(100vh - 82px);
     overflow: hidden;
     background: #dfcfbe;
     border-radius: 12px 0 0 12px
@@ -233,7 +245,7 @@ select {
 .hero-image-wrap img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     object-position: center;
     position: relative;
     display: block;
@@ -694,10 +706,10 @@ select {
 
 .contact-logo {
     display: block;
-    width: min(100%, 900px) !important;
-    max-width: 900px !important;
+    width: min(100%, 760px) !important;
+    max-width: 760px !important;
     height: auto;
-    max-height: 450px;
+    max-height: 420px;
     object-fit: contain;
     object-position: center;
     align-self: center
@@ -716,14 +728,6 @@ select {
 
 .site-footer img {
     height: auto;
-}
-
-.footer-brand .brand-mark {
-    width: 70px !important;
-}
-
-.footer-brand .brand-wordmark {
-    width: 170px !important;
 }
 
 .modal {
@@ -890,12 +894,20 @@ select {
 
 @media(max-width:800px) {
     .site-header {
-        height: 70px;
-        padding: 0 6vw
+        min-height: 70px;
+        padding: 10px 6vw
     }
 
     .brand img {
         width: 118px
+    }
+
+    .brand-mark {
+        width: clamp(30px, 7vw, 42px) !important
+    }
+
+    .brand-wordmark {
+        width: clamp(92px, 25vw, 118px) !important
     }
 
     .menu-toggle {
@@ -960,20 +972,21 @@ select {
     }
 
     .hero-copy {
-        padding: 85px 8vw 55px
+        padding: 28px 8vw 14px
     }
 
     .hero-copy h1 {
-        font-size: clamp(3.4rem, 15vw, 6rem)
+        font-size: clamp(2.1rem, 9vw, 3.7rem);
+        max-width: 12ch
     }
 
     .hero-intro {
         font-size: 14px;
-        margin-top: 25px
+        margin-top: 12px
     }
 
     .hero-image-wrap {
-        min-height: 570px
+        min-height: 56vh
     }
 
     .hero-stamp {
@@ -990,7 +1003,7 @@ select {
     }
 
     .section-shell {
-        padding: 85px 8vw
+        padding: 72px 8vw
     }
 
     .about-grid,
@@ -1058,8 +1071,8 @@ select {
     }
 
     .contact {
-        padding: 80px 8vw;
-        min-height: 600px;
+        padding: 72px 8vw;
+        min-height: 0;
         display: block;
         position: relative
     }
@@ -1075,22 +1088,11 @@ select {
         margin-top: 45px
     }
 
-    .contact-logo {
-        width: 100%;
-        max-width: 480px;
-        max-height: 145px;
-        margin-top: 55px
-    }
-
     .site-footer {
         padding: 25px 8vw;
         gap: 15px;
         align-items: flex-start;
         flex-wrap: wrap
-    }
-
-    .site-footer img {
-        width: 125px
     }
 
     .site-footer p {
