@@ -38,7 +38,6 @@ let viewerPan = { x: 0, y: 0, startX: 0, startY: 0, dragging: false };
 let viewerPointers = new Map();
 let viewerPinchStartDistance = 0;
 let viewerPinchStartZoom = 1;
-let viewerPinchCenter = { x: 0, y: 0 };
 let selectedProduct = null;
 let activeFilter = 'all';
 let editingCartIndex = null;
@@ -243,10 +242,6 @@ viewerImage.addEventListener('pointerdown', event => {
         const [first, second] = [...viewerPointers.values()];
         viewerPinchStartDistance = getPointerDistance(first, second);
         viewerPinchStartZoom = viewerZoom;
-        viewerPinchCenter = {
-            x: (first.clientX + second.clientX) / 2,
-            y: (first.clientY + second.clientY) / 2
-        };
         viewerPan.dragging = false;
         viewerImage.classList.add('is-dragging');
         event.preventDefault();
@@ -265,14 +260,7 @@ viewerImage.addEventListener('pointermove', event => {
     if (viewerPointers.size === 2) {
         const [first, second] = [...viewerPointers.values()];
         const distance = getPointerDistance(first, second);
-        const scale = viewerPinchStartZoom * (distance / viewerPinchStartDistance);
-        setViewerZoom(scale);
-        const rect = viewerImage.getBoundingClientRect();
-        const centerX = (first.clientX + second.clientX) / 2 - rect.left - rect.width / 2;
-        const centerY = (first.clientY + second.clientY) / 2 - rect.top - rect.height / 2;
-        viewerPan.x = centerX * (1 - viewerZoom / viewerPinchStartZoom);
-        viewerPan.y = centerY * (1 - viewerZoom / viewerPinchStartZoom);
-        updateViewerTransform();
+        setViewerZoom(viewerPinchStartZoom * (distance / viewerPinchStartDistance));
         event.preventDefault();
         return;
     }
