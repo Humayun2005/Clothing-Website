@@ -129,10 +129,18 @@ select {
     color: var(--terracotta)
 }
 
-.bag-icon,
+.bag-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--terracotta);
+    fill: currentColor;
+    flex: 0 0 auto
+}
+
 .whatsapp-icon {
     width: 18px;
     height: 18px;
+    color: #25D366;
     fill: currentColor;
     flex: 0 0 auto
 }
@@ -219,6 +227,14 @@ select {
 .button-light {
     background: var(--paper);
     color: var(--ink)
+}
+
+.contact .button .whatsapp-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 2px;
+    margin-top: 1px;
+    color: #25D366
 }
 
 .text-link {
