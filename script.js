@@ -35,6 +35,10 @@ const heroCaptionNext = document.querySelector('#hero-caption-next');
 const heroFrame = heroImage.closest('.hero-image-wrap');
 let viewerZoom = 1;
 let viewerPan = { x: 0, y: 0, startX: 0, startY: 0, dragging: false };
+let viewerPointers = new Map();
+let viewerPinchStartDistance = 0;
+let viewerPinchStartZoom = 1;
+let viewerPinchCenter = { x: 0, y: 0 };
 let selectedProduct = null;
 let activeFilter = 'all';
 let editingCartIndex = null;
@@ -168,6 +172,15 @@ function setViewerZoom(zoom) {
     viewerImage.style.cursor = viewerZoom > 1 ? 'grab' : 'zoom-in';
 }
 
+function updateViewerTransform() {
+    viewerImage.style.transform = `translate(${viewerPan.x}px, ${viewerPan.y}px) scale(${viewerZoom})`;
+    viewerImage.style.cursor = viewerZoom > 1 ? 'grab' : 'zoom-in';
+}
+
+function getPointerDistance(a, b) {
+    return Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+}
+
 function openCart() {
     renderCart();
     cartDrawer.classList.add('open');
@@ -225,6 +238,20 @@ viewerImage.addEventListener('wheel', event => {
 viewerImage.addEventListener('dblclick', () => setViewerZoom(viewerZoom === 1 ? 2 : 1));
 document.querySelectorAll('[data-close-cart]').forEach(element => element.addEventListener('click', closeCart));
 viewerImage.addEventListener('pointerdown', event => {
+    viewerPointers.set(event.pointerId, event);
+    if (viewerPointers.size === 2) {
+        const [first, second] = [...viewerPointers.values()];
+        viewerPinchStartDistance = getPointerDistance(first, second);
+        viewerPinchStartZoom = viewerZoom;
+        viewerPinchCenter = {
+            x: (first.clientX + second.clientX) / 2,
+            y: (first.clientY + second.clientY) / 2
+        };
+        viewerPan.dragging = false;
+        viewerImage.classList.add('is-dragging');
+        event.preventDefault();
+        return;
+    }
     if (viewerZoom === 1) return;
     event.preventDefault();
     viewerPan.dragging = true;
@@ -234,21 +261,46 @@ viewerImage.addEventListener('pointerdown', event => {
     viewerImage.classList.add('is-dragging');
 });
 viewerImage.addEventListener('pointermove', event => {
+    if (viewerPointers.has(event.pointerId)) viewerPointers.set(event.pointerId, event);
+    if (viewerPointers.size === 2) {
+        const [first, second] = [...viewerPointers.values()];
+        const distance = getPointerDistance(first, second);
+        const scale = viewerPinchStartZoom * (distance / viewerPinchStartDistance);
+        setViewerZoom(scale);
+        const rect = viewerImage.getBoundingClientRect();
+        const centerX = (first.clientX + second.clientX) / 2 - rect.left - rect.width / 2;
+        const centerY = (first.clientY + second.clientY) / 2 - rect.top - rect.height / 2;
+        viewerPan.x = centerX * (1 - viewerZoom / viewerPinchStartZoom);
+        viewerPan.y = centerY * (1 - viewerZoom / viewerPinchStartZoom);
+        updateViewerTransform();
+        event.preventDefault();
+        return;
+    }
     if (!viewerPan.dragging) return;
     viewerPan.x = event.clientX - viewerPan.startX;
     viewerPan.y = event.clientY - viewerPan.startY;
-    viewerImage.style.transform = `translate(${viewerPan.x}px, ${viewerPan.y}px) scale(${viewerZoom})`;
+    updateViewerTransform();
 });
 viewerImage.addEventListener('pointerup', event => {
+    viewerPointers.delete(event.pointerId);
     viewerPan.dragging = false;
     if (viewerImage.hasPointerCapture(event.pointerId)) viewerImage.releasePointerCapture(event.pointerId);
     viewerImage.classList.remove('is-dragging');
+    if (viewerPointers.size < 2) {
+        viewerPinchStartDistance = 0;
+        viewerPinchStartZoom = viewerZoom;
+    }
     viewerImage.style.cursor = viewerZoom > 1 ? 'grab' : 'zoom-in';
 });
 viewerImage.addEventListener('pointercancel', event => {
+    viewerPointers.delete(event.pointerId);
     viewerPan.dragging = false;
     if (viewerImage.hasPointerCapture(event.pointerId)) viewerImage.releasePointerCapture(event.pointerId);
     viewerImage.classList.remove('is-dragging');
+    if (viewerPointers.size < 2) {
+        viewerPinchStartDistance = 0;
+        viewerPinchStartZoom = viewerZoom;
+    }
     viewerImage.style.cursor = viewerZoom > 1 ? 'grab' : 'zoom-in';
 });
 document.querySelectorAll('[data-hero-direction]').forEach(button => button.addEventListener('click', () => changeHeroProduct(button.dataset.heroDirection === 'next' ? 1 : -1)));
