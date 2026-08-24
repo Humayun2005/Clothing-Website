@@ -178,7 +178,7 @@ select {
     max-width: 360px;
     color: var(--muted);
     font-size: 15px;
-    margin-top: 16px
+    margin-top: 20px
 }
 
 .hero-actions {
@@ -266,6 +266,74 @@ select {
     z-index: 1;
 }
 
+.image-caption {
+    position: absolute;
+    left: clamp(14px, 2vw, 28px);
+    bottom: clamp(14px, 2vw, 28px);
+    right: clamp(14px, 2vw, 28px);
+    color: #fff;
+    text-shadow: 0 1px 8px #0008
+}
+
+.caption-layer {
+    display: flex;
+    flex-direction: column;
+    will-change: transform, opacity
+}
+
+.caption-current {
+    position: relative;
+    z-index: 2
+}
+
+.caption-next {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    z-index: 1
+}
+
+.hero-image-wrap.slide-next .caption-current,
+.hero-image-wrap.slide-prev .caption-current {
+    animation-duration: .65s;
+    animation-fill-mode: both
+}
+
+.hero-image-wrap.slide-next .caption-next,
+.hero-image-wrap.slide-prev .caption-next {
+    opacity: 1;
+    animation-duration: .65s;
+    animation-fill-mode: both
+}
+
+.hero-image-wrap.slide-next .caption-current {
+    animation-name: caption-out-left
+}
+
+.hero-image-wrap.slide-next .caption-next {
+    animation-name: caption-in-right
+}
+
+.hero-image-wrap.slide-prev .caption-current {
+    animation-name: caption-out-right
+}
+
+.hero-image-wrap.slide-prev .caption-next {
+    animation-name: caption-in-left
+}
+
+.image-caption span {
+    font-size: clamp(9px, 1.1vw, 10px);
+    text-transform: uppercase;
+    letter-spacing: .16em
+}
+
+.image-caption strong {
+    font: clamp(20px, 2.6vw, 32px) 'Playfair Display', serif;
+    overflow-wrap: break-word;
+    word-break: break-word
+}
+
 .hero-image-wrap.slide-next #hero-product-image,
 .hero-image-wrap.slide-prev #hero-product-image {
     animation-duration: .65s;
@@ -324,6 +392,44 @@ select {
 
     to {
         transform: translateX(0);
+    }
+}
+
+@keyframes caption-out-left {
+    to {
+        transform: translateX(-18%);
+        opacity: 0
+    }
+}
+
+@keyframes caption-in-right {
+    from {
+        transform: translateX(18%);
+        opacity: 0
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1
+    }
+}
+
+@keyframes caption-out-right {
+    to {
+        transform: translateX(18%);
+        opacity: 0
+    }
+}
+
+@keyframes caption-in-left {
+    from {
+        transform: translateX(-18%);
+        opacity: 0
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1
     }
 }
 
@@ -388,29 +494,6 @@ select {
     touch-action: pan-y
 }
 
-.image-caption {
-    position: absolute;
-    left: clamp(14px, 2vw, 28px);
-    bottom: clamp(14px, 2vw, 28px);
-    right: clamp(14px, 2vw, 28px);
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    text-shadow: 0 1px 8px #0008
-}
-
-.image-caption span {
-    font-size: clamp(9px, 1.1vw, 10px);
-    text-transform: uppercase;
-    letter-spacing: .16em
-}
-
-.image-caption strong {
-    font: clamp(20px, 2.6vw, 32px) \'Playfair Display\', serif;
-    overflow-wrap: break-word;
-    word-break: break-word
-}
-
 .hero-stamp {
     position: absolute;
     bottom: clamp(10%, 6vh, 18%);
@@ -465,9 +548,9 @@ select {
 }
 
 .section-shell {
-    max-width: 1280px;
-    margin: auto;
-    padding: 130px 5vw
+    max-width: none;
+    margin: 0;
+    padding: 70px 4vw
 }
 
 .section-label {
@@ -479,8 +562,8 @@ select {
 .shop-heading {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8vw;
-    padding-top: 54px
+    gap: 6vw;
+    padding-top: 30px
 }
 
 .about-copy {
@@ -489,7 +572,7 @@ select {
 }
 
 .large-copy {
-    font: 32px/1.15 'Playfair Display', serif;
+    font: 26px/1.2 'Playfair Display', serif;
     margin-bottom: 28px
 }
 
@@ -503,8 +586,8 @@ select {
     grid-template-columns: repeat(3, 1fr);
     gap: 5vw;
     border-top: 1px solid #d5cabd;
-    margin-top: 110px;
-    padding-top: 23px
+    margin-top: 42px;
+    padding-top: 16px
 }
 
 .values b {
@@ -513,8 +596,8 @@ select {
 }
 
 .values h3 {
-    font: 22px 'Playfair Display', serif;
-    margin: 32px 0 12px
+    font: 18px 'Playfair Display', serif;
+    margin: 20px 0 12px
 }
 
 .values p {
@@ -523,12 +606,22 @@ select {
     max-width: 220px
 }
 
-.shop {
-    padding-top: 20px
+/* Keep only a hairline gap between the boutique values and the collection. */
+.about.section-shell {
+    padding-bottom: 0
+}
+
+.about+.shop.section-shell {
+    padding-top: 50px
+}
+
+.shop.section-shell {
+    padding-left: 4vw;
+    padding-right: 4vw
 }
 
 .shop-heading {
-    padding-bottom: 65px
+    padding-bottom: 36px
 }
 
 .shop-heading>p {
@@ -681,7 +774,7 @@ select {
     background: var(--ink);
     color: var(--paper);
     min-height: 550px;
-    padding: 110px 8vw;
+    padding: 50px 4vw;
     display: flex;
     justify-content: space-between;
     overflow: hidden
@@ -697,6 +790,7 @@ select {
 }
 
 .contact h2 {
+    font-size: clamp(2.6rem, 5vw, 4.4rem);
     margin: 55px 0 30px
 }
 
@@ -728,7 +822,7 @@ select {
 }
 
 .site-footer {
-    padding: 30px 5vw;
+    padding: 30px 4vw;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -998,7 +1092,7 @@ select {
 
     .hero-intro {
         font-size: 14px;
-        margin-top: 10px
+        margin-top: 20px
     }
 
     .hero-image-wrap {
@@ -1062,7 +1156,7 @@ select {
     }
 
     .section-shell {
-        padding: 72px 8vw
+        padding: 72px 5vw
     }
 
     .about-grid,
@@ -1085,10 +1179,6 @@ select {
 
     .values h3 {
         margin: 10px 0 5px
-    }
-
-    .shop {
-        padding-top: 0
     }
 
     .shop-heading {
@@ -1925,29 +2015,36 @@ select {
         bottom: auto;
         top: auto;
         float: right;
-        margin: 8px -2px 0 12px;
-        width: 74px;
-        height: 74px;
-        padding-top: 14px;
-        font-size: 8.5px;
+        margin: 6px -2px 0 10px;
+        width: 66px;
+        height: 66px;
+        padding-top: 11px;
+        font-size: 7.5px;
         transform: rotate(-12deg);
         z-index: 5;
     }
 
     .hero-stamp span {
-        font-size: 20px;
+        font-size: 17px;
     }
 
     .hero-actions {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 18px;
-        clear: right
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        clear: none
     }
 
     .button {
-        width: 100%;
+        width: auto;
+        flex: 1 1 auto;
+        min-width: 0;
         justify-content: center;
+        padding: 10px 12px;
+        gap: 10px;
+        font-size: 9px;
+        letter-spacing: .1em
     }
 
     .hero-arrow {

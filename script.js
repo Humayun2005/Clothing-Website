@@ -30,7 +30,8 @@ const imageViewer = document.querySelector('#image-viewer');
 const viewerImage = document.querySelector('#viewer-image');
 const heroImage = document.querySelector('#hero-product-image');
 const heroNextImage = document.querySelector('#hero-next-image');
-const heroCaption = document.querySelector('.image-caption strong');
+const heroCaptionCurrent = document.querySelector('#hero-caption-current');
+const heroCaptionNext = document.querySelector('#hero-caption-next');
 const heroFrame = heroImage.closest('.hero-image-wrap');
 let viewerZoom = 1;
 let viewerPan = { x: 0, y: 0, startX: 0, startY: 0, dragging: false };
@@ -85,29 +86,36 @@ function changeHeroProduct(direction) {
     heroProductIndex = (heroProductIndex + direction + products.length) % products.length;
     const product = products[heroProductIndex];
     const movement = direction > 0 ? 'slide-next' : 'slide-prev';
+    const resetCaption = () => {
+        heroCaptionCurrent.textContent = product.name;
+        heroCaptionNext.textContent = product.name;
+    };
     const startSlide = () => {
         heroFrame.classList.remove('slide-next', 'slide-prev');
         void heroFrame.offsetWidth;
         heroFrame.classList.add(movement);
     };
+    heroCaptionNext.textContent = product.name;
     heroNextImage.onload = startSlide;
     heroNextImage.onerror = () => {
         heroNextImage.onload = null;
         heroNextImage.onerror = null;
         heroFrame.classList.remove('slide-next', 'slide-prev');
         heroNextImage.src = heroImage.src;
+        resetCaption();
     };
     heroNextImage.src = product.image;
     heroNextImage.alt = `${product.name} 2 piece suit`;
-    heroCaption.textContent = product.name;
     if (heroNextImage.complete) requestAnimationFrame(startSlide);
-    heroFrame.addEventListener('animationend', () => {
+    heroNextImage.addEventListener('animationend', () => {
         heroNextImage.onload = null;
         heroNextImage.onerror = null;
         heroImage.src = heroNextImage.src;
         heroImage.alt = heroNextImage.alt;
         heroNextImage.src = heroImage.src;
         heroNextImage.alt = '';
+        heroCaptionCurrent.textContent = product.name;
+        heroCaptionNext.textContent = product.name;
         heroFrame.classList.remove('slide-next', 'slide-prev');
     }, { once: true });
 }

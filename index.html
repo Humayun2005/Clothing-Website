@@ -50,7 +50,10 @@
                 <button class="hero-arrow hero-next" data-hero-direction="next" aria-label="Next featured suit"><span class="arrow-glyph">&gt;</span></button>
                 <img id="hero-product-image" src="assets/Coral Bloom 2 Piece Suit.png" alt="Coral Bloom floral 2 piece suit">
                 <img id="hero-next-image" class="hero-next-image" src="assets/Coral Bloom 2 Piece Suit.png" alt="" aria-hidden="true">
-                <div class="image-caption"><span>Featured edit</span><strong>Coral Bloom</strong></div>
+                <div class="image-caption" aria-live="polite">
+                    <div class="caption-layer caption-current"><span>Featured edit</span><strong id="hero-caption-current">Coral Bloom</strong></div>
+                    <div class="caption-layer caption-next" aria-hidden="true"><span>Featured edit</span><strong id="hero-caption-next">Coral Bloom</strong></div>
+                </div>
             </div>
         </section>
 
