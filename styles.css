@@ -194,7 +194,7 @@ select {
 .hero-actions {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 30px;
     margin-top: 18px;
     flex-wrap: wrap
 }
@@ -2050,7 +2050,7 @@ select {
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
-        gap: 8px;
+        gap: 20px;
         clear: none
     }
 
