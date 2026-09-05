@@ -1,14 +1,13 @@
 const products = [
-    ['Coral Bloom', 'Printed & Floral'], ['Ivory Plum Garden', 'Contrast & Two-Tone'], ['Blue Meadow', 'Printed & Floral'],
-    ['Emerald Elegance', 'Plain & Minimal'], ['Autumn Garden', 'Contrast & Two-Tone'], ['Royal Plum', 'Plain & Minimal'],
-    ['Blush Pearl', 'Plain & Minimal'], ['Coral Blossom', 'Contrast & Two-Tone'], ['Plum Heritage', 'Plain & Minimal'],
-    ['Sage Grace', 'Plain & Minimal'], ['Midnight Bloom', 'Plain & Minimal'], ['Amber Floral', 'Printed & Floral'],
-    ['Rose Garden', 'Printed & Floral'], ['Plum Lily', 'Printed & Floral'], ['Monochrome Garden', 'Printed & Floral'],
-    ['Violet Vine', 'Printed & Floral'], ['Mustard Daisy', 'Printed & Floral'], ['Silver Rose', 'Contrast & Two-Tone'],
-    ['Striped Blossom', 'Printed & Floral']
-].map(([name, category], index) => ({
-    name,
-    category,
+    ['Coral Bloom', 'Printed & Floral', 'XL', 25], ['Ivory Plum Garden', 'Contrast & Two-Tone', 'XL', 20], ['Blue Meadow', 'Printed & Floral', 'L', 25],
+    ['Emerald Elegance', 'Plain & Minimal', 'XL', 35], ['Autumn Garden', 'Contrast & Two-Tone', 'L', 25], ['Royal Plum', 'Plain & Minimal', 'XL', 35, true],
+    ['Blush Pearl', 'Plain & Minimal', 'L', 35], ['Coral Blossom', 'Contrast & Two-Tone', 'XL', 20], ['Plum Heritage', 'Plain & Minimal', 'XL', 35],
+    ['Sage Grace', 'Plain & Minimal', 'XL', 36, true], ['Midnight Bloom', 'Plain & Minimal', 'L', 35], ['Amber Floral', 'Printed & Floral', 'XL', 35],
+    ['Rose Garden', 'Printed & Floral', 'XL', 20], ['Plum Lily', 'Printed & Floral', 'XL', 25], ['Monochrome Garden', 'Printed & Floral', 'L', 25],
+    ['Violet Vine', 'Printed & Floral', 'XL', 25], ['Mustard Daisy', 'Printed & Floral', 'XL', 20], ['Silver Rose', 'Contrast & Two-Tone', 'XL', 20],
+    ['Striped Blossom', 'Printed & Floral', 'XL', 20]
+].map(([name, category, size, price, outOfStock], index) => ({
+    name, category, size, price, outOfStock: Boolean(outOfStock),
     number: String(index + 1).padStart(2, '0'),
     image: `assets/${name} 2 Piece Suit.png`
 }));
@@ -16,6 +15,8 @@ const products = [
 const grid = document.querySelector('#product-grid');
 const emptyState = document.querySelector('#empty-state');
 const searchInput = document.querySelector('#product-search');
+const sizeFilter = document.querySelector('#size-filter');
+const sortProducts = document.querySelector('#sort-products');
 const modal = document.querySelector('#order-modal');
 const modalImage = document.querySelector('#modal-image');
 const modalProduct = document.querySelector('#modal-product');
@@ -23,16 +24,12 @@ const modalCategory = document.querySelector('#modal-category');
 const cartDrawer = document.querySelector('#cart-drawer');
 const cartItems = document.querySelector('#cart-items');
 const cartEmpty = document.querySelector('#cart-empty');
+const cartTotal = document.querySelector('#cart-total');
 const cartCount = document.querySelector('#cart-count');
 const checkoutForm = document.querySelector('#checkout-form');
 const addressField = checkoutForm.elements.address;
 const imageViewer = document.querySelector('#image-viewer');
 const viewerImage = document.querySelector('#viewer-image');
-const heroImage = document.querySelector('#hero-product-image');
-const heroNextImage = document.querySelector('#hero-next-image');
-const heroCaptionCurrent = document.querySelector('#hero-caption-current');
-const heroCaptionNext = document.querySelector('#hero-caption-next');
-const heroFrame = heroImage.closest('.hero-image-wrap');
 let viewerZoom = 1;
 let viewerPan = { x: 0, y: 0, startX: 0, startY: 0, dragging: false };
 let viewerPointers = new Map();
@@ -40,10 +37,10 @@ let viewerPinchStartDistance = 0;
 let viewerPinchStartZoom = 1;
 let selectedProduct = null;
 let activeFilter = 'all';
+let activeSize = 'all';
+let activeSort = 'default';
 let editingCartIndex = null;
 let cart = [];
-let heroProductIndex = 0;
-let heroAutoplay = null;
 const preloadedProductImages = products.map(product => {
     const image = new Image();
     image.src = product.image;
@@ -69,67 +66,39 @@ function renderProducts() {
     const query = searchInput.value.trim().toLowerCase();
     const visibleProducts = products.filter(product => {
         const matchesFilter = activeFilter === 'all' || product.category === activeFilter;
-        const matchesSearch = product.name.toLowerCase().includes(query) || product.category.toLowerCase().includes(query);
-        return matchesFilter && matchesSearch;
+        const matchesSize = activeSize === 'all' || product.size === activeSize;
+        const matchesSearch = product.name.toLowerCase().includes(query) || product.category.toLowerCase().includes(query) || product.size.toLowerCase().includes(query);
+        return matchesFilter && matchesSize && matchesSearch;
+    }).sort((first, second) => {
+        if (activeSort === 'price-low') return first.price - second.price;
+        if (activeSort === 'price-high') return second.price - first.price;
+        return Number(first.number) - Number(second.number);
     });
 
     grid.innerHTML = visibleProducts.map(product => `
     <article class="product-card">
       <div class="product-image">
                 <button class="product-preview" data-product="${product.number}" aria-label="View ${product.name} larger"><img src="${product.image}" alt="${product.name} 2 piece suit" loading="lazy"></button>
-        <button class="order-button" data-product="${product.number}" aria-label="Order ${product.name}">↗</button>
+                <button class="order-button" data-product="${product.number}" aria-label="${product.outOfStock ? `${product.name} is out of stock` : `Order ${product.name}`}" ${product.outOfStock ? 'disabled' : ''}>${product.outOfStock ? '—' : '↗'}</button>
       </div>
-      <div class="product-info"><div><h3>${product.name}</h3><p>${product.category}</p></div><span class="product-number">${product.number}</span></div>
+            <div class="product-info"><div><h3>${product.name}</h3><p>${product.category}</p><div class="product-meta"><span>Size ${product.size}</span><strong>£${product.price}</strong></div></div><span class="product-number">${product.outOfStock ? 'Out of stock' : product.number}</span></div>
     </article>
   `).join('');
     emptyState.hidden = visibleProducts.length > 0;
 }
 
-function changeHeroProduct(direction) {
-    heroProductIndex = (heroProductIndex + direction + products.length) % products.length;
-    const product = products[heroProductIndex];
-    const movement = direction > 0 ? 'slide-next' : 'slide-prev';
-    const resetCaption = () => {
-        heroCaptionCurrent.textContent = product.name;
-        heroCaptionNext.textContent = product.name;
-    };
-    const startSlide = () => {
-        heroFrame.classList.remove('slide-next', 'slide-prev');
-        void heroFrame.offsetWidth;
-        heroFrame.classList.add(movement);
-    };
-    heroCaptionNext.textContent = product.name;
-    heroNextImage.onload = startSlide;
-    heroNextImage.onerror = () => {
-        heroNextImage.onload = null;
-        heroNextImage.onerror = null;
-        heroFrame.classList.remove('slide-next', 'slide-prev');
-        heroNextImage.src = heroImage.src;
-        resetCaption();
-    };
-    heroNextImage.src = product.image;
-    heroNextImage.alt = `${product.name} 2 piece suit`;
-    if (heroNextImage.complete) requestAnimationFrame(startSlide);
-    heroNextImage.addEventListener('animationend', () => {
-        heroNextImage.onload = null;
-        heroNextImage.onerror = null;
-        heroImage.src = heroNextImage.src;
-        heroImage.alt = heroNextImage.alt;
-        heroNextImage.src = heroImage.src;
-        heroNextImage.alt = '';
-        heroCaptionCurrent.textContent = product.name;
-        heroCaptionNext.textContent = product.name;
-        heroFrame.classList.remove('slide-next', 'slide-prev');
-    }, { once: true });
-}
 
 function openModal(product) {
+    if (product.outOfStock) return;
     selectedProduct = product;
     modalImage.src = product.image;
     modalImage.alt = product.name;
     modalProduct.textContent = `${product.name} 2 Piece Suit`;
-    modalCategory.textContent = product.category;
+    modalCategory.textContent = `${product.category} · Size ${product.size} · £${product.price}`;
+    const sizeSelect = document.querySelector('[name="size"]');
+    sizeSelect.innerHTML = `<option value="${product.size}">${product.size}</option>`;
     document.querySelector('#order-form').reset();
+    sizeSelect.value = product.size;
     if (editingCartIndex !== null) {
         const item = cart[editingCartIndex];
         document.querySelector('[name="size"]').value = item.size;
@@ -182,6 +151,7 @@ function getPointerDistance(a, b) {
 
 function openCart() {
     renderCart();
+    cartDrawer.querySelector('.cart-panel').scrollTop = 0;
     cartDrawer.classList.add('open');
     cartDrawer.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
@@ -205,12 +175,22 @@ function closeCart() {
     document.body.style.overflow = '';
 }
 
+function closeMenu() {
+    const menuButton = document.querySelector('.menu-toggle');
+    const navigation = document.querySelector('.site-nav');
+    navigation.classList.remove('open');
+    menuButton.setAttribute('aria-expanded', 'false');
+    menuButton.setAttribute('aria-label', 'Open menu');
+}
+
 function renderCart() {
     cartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
     cartEmpty.hidden = cart.length > 0;
+    cartTotal.hidden = cart.length === 0;
+    cartTotal.querySelector('strong').textContent = `£${cart.reduce((total, item) => total + item.product.price * item.quantity, 0)}`;
     checkoutForm.hidden = cart.length === 0;
     cartItems.innerHTML = cart.map((item, index) => `
-        <div class="cart-item"><img src="${item.product.image}" alt="${item.product.name}"><div class="cart-item-copy"><strong>${item.product.name}</strong><small>${item.size} · ${item.details || 'No extra notes'}</small><div class="cart-item-actions"><button data-cart-action="decrease" data-index="${index}" aria-label="Decrease quantity">−</button><span>${item.quantity}</span><button data-cart-action="increase" data-index="${index}" aria-label="Increase quantity">+</button><button class="edit-item" data-cart-action="edit" data-index="${index}">Edit</button><button class="remove-item" data-cart-action="remove" data-index="${index}">Remove</button></div></div></div>
+        <div class="cart-item"><img src="${item.product.image}" alt="${item.product.name}"><div class="cart-item-copy"><strong>${item.product.name}</strong><small>${item.size} · £${item.product.price} · ${item.details || 'No extra notes'}</small><div class="cart-item-actions"><button data-cart-action="decrease" data-index="${index}" aria-label="Decrease quantity">−</button><span>${item.quantity}</span><button data-cart-action="increase" data-index="${index}" aria-label="Increase quantity">+</button><button class="edit-item" data-cart-action="edit" data-index="${index}">Edit</button><button class="remove-item" data-cart-action="remove" data-index="${index}">Remove</button></div></div></div>
     `).join('');
 }
 
@@ -220,6 +200,14 @@ document.querySelectorAll('.filter').forEach(button => button.addEventListener('
     activeFilter = button.dataset.filter;
     renderProducts();
 }));
+sizeFilter.addEventListener('change', event => {
+    activeSize = event.target.value;
+    renderProducts();
+});
+sortProducts.addEventListener('change', event => {
+    activeSort = event.target.value;
+    renderProducts();
+});
 searchInput.addEventListener('input', renderProducts);
 grid.addEventListener('click', event => {
     const button = event.target.closest('.order-button');
@@ -228,6 +216,7 @@ grid.addEventListener('click', event => {
     if (preview) openImageViewer(products[Number(preview.dataset.product) - 1]);
 });
 document.querySelector('#cart-trigger').addEventListener('click', () => {
+    closeMenu();
     if (cartDrawer.classList.contains('open')) {
         closeCart();
         return;
@@ -309,23 +298,19 @@ viewerImage.addEventListener('pointercancel', event => {
     }
     viewerImage.style.cursor = viewerZoom > 1 ? 'grab' : 'zoom-in';
 });
-document.querySelectorAll('[data-hero-direction]').forEach(button => button.addEventListener('click', () => changeHeroProduct(button.dataset.heroDirection === 'next' ? 1 : -1)));
-let heroTouchStartX = 0;
-heroFrame.addEventListener('touchstart', event => {
-    heroTouchStartX = event.changedTouches[0].clientX;
-}, { passive: true });
-heroFrame.addEventListener('touchend', event => {
-    const distance = event.changedTouches[0].clientX - heroTouchStartX;
-    if (Math.abs(distance) < 45) return;
-    changeHeroProduct(distance < 0 ? 1 : -1);
-}, { passive: true });
-heroAutoplay = setInterval(() => changeHeroProduct(1), 5000);
 document.addEventListener('keydown', event => { if (event.key === 'Escape' && modal.classList.contains('open')) closeModal(); if (event.key === 'Escape' && cartDrawer.classList.contains('open')) closeCart(); if (event.key === 'Escape' && imageViewer.classList.contains('open')) closeImageViewer(); if (imageViewer.classList.contains('open') && (event.key === '+' || event.key === '=')) setViewerZoom(viewerZoom + 0.25); if (imageViewer.classList.contains('open') && event.key === '-') setViewerZoom(viewerZoom - 0.25); });
 document.querySelector('#order-form').addEventListener('submit', event => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const item = { product: selectedProduct, size: formData.get('size'), details: formData.get('details'), quantity: 1 };
-    if (editingCartIndex === null) cart.push(item); else { item.quantity = cart[editingCartIndex].quantity; cart[editingCartIndex] = item; }
+    if (editingCartIndex === null) {
+        const existingItem = cart.find(cartItem => cartItem.product.number === item.product.number && cartItem.size === item.size && cartItem.details === item.details);
+        if (existingItem) existingItem.quantity += 1;
+        else cart.push(item);
+    } else {
+        item.quantity = cart[editingCartIndex].quantity;
+        cart[editingCartIndex] = item;
+    }
     editingCartIndex = null;
     closeModal();
     renderCart();
@@ -340,28 +325,32 @@ checkoutForm.addEventListener('submit', event => {
     const address = addressField.value.trim();
     nameField.setCustomValidity(name && !/^[A-Za-z ]{1,100}$/.test(name) ? 'Use letters and spaces only, up to 100 characters.' : '');
     phoneField.setCustomValidity(!phone ? 'Please enter your mobile number.' : !/^(?=.*\d)[0-9+() ]{3,30}$/.test(phone) ? 'Use 3-30 characters: numbers, spaces, + and brackets only.' : '');
-    addressField.setCustomValidity(!address ? 'Please enter your Leicester delivery address.' : !/^[A-Za-z0-9 .,/#'()\-\r\n]{1,1000}$/.test(address) ? 'Use letters, numbers, spaces, and common address punctuation only, up to 1000 characters.' : '');
+    addressField.setCustomValidity(!address ? 'Please enter your UK delivery address.' : !/^[A-Za-z0-9 .,/#'()\-\r\n]{1,1000}$/.test(address) ? 'Use letters, numbers, spaces, and common address punctuation only, up to 1000 characters.' : '');
     if (!checkoutForm.checkValidity()) {
         checkoutForm.reportValidity();
         return;
     }
     const formData = new FormData(event.currentTarget);
-    const items = cart.map((item, index) => `${index + 1}. ${item.product.name} 2 Piece Suit x${item.quantity}\n   Size: ${item.size}\n   Notes: ${item.details || 'None'}`).join('\n');
-    const message = `Hello ASMA Boutique, I would like to place an order:\n\n${items}\n\nName: ${formData.get('name') || 'Not provided'}\nMobile: ${formData.get('phone')}\nDelivery address: ${formData.get('address') || 'Not provided'}\nAnything else: ${formData.get('other') || 'None'}\n\nI confirm delivery is within Leicester.`;
-    window.open(`https://wa.me/923112558691?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+    const items = cart.map((item, index) => `${index + 1}. ${item.product.name} 2 Piece Suit x${item.quantity}\n   Size: ${item.size}\n   Price: £${item.product.price} each\n   Notes: ${item.details || 'None'}`).join('\n');
+    const totalAmount = cart.reduce((total, item) => total + item.product.price * item.quantity, 0);
+    const message = `Hello ASMA Boutique, I would like to place an order:\n\n${items}\n\nTotal amount: £${totalAmount}\n\nName: ${formData.get('name') || 'Not provided'}\nMobile: ${formData.get('phone')}\nDelivery address: ${formData.get('address') || 'Not provided'}\nAnything else: ${formData.get('other') || 'None'}\n\nI confirm delivery is within the UK.`;
+    window.open(`https://wa.me/447471039239?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
 });
 
 document.querySelector('.menu-toggle').addEventListener('click', event => {
     const button = event.currentTarget;
     const nav = document.querySelector('.site-nav');
+    if (!nav.classList.contains('open')) closeCart();
     const isOpen = nav.classList.toggle('open');
     button.setAttribute('aria-expanded', String(isOpen));
     button.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
 });
+document.addEventListener('click', event => {
+    const nav = document.querySelector('.site-nav');
+    if (nav.classList.contains('open') && !event.target.closest('.site-header')) closeMenu();
+});
 document.querySelectorAll('.site-nav a').forEach(link => link.addEventListener('click', () => {
-    document.querySelector('.site-nav').classList.remove('open');
-    document.querySelector('.menu-toggle').setAttribute('aria-expanded', 'false');
-    document.querySelector('.menu-toggle').setAttribute('aria-label', 'Open menu');
+    closeMenu();
 }));
 
 renderProducts();
