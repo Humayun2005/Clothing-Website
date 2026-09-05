@@ -70,18 +70,20 @@ function renderProducts() {
         const matchesSearch = product.name.toLowerCase().includes(query) || product.category.toLowerCase().includes(query) || product.size.toLowerCase().includes(query);
         return matchesFilter && matchesSize && matchesSearch;
     }).sort((first, second) => {
+        if (first.outOfStock !== second.outOfStock) return Number(first.outOfStock) - Number(second.outOfStock);
         if (activeSort === 'price-low') return first.price - second.price;
         if (activeSort === 'price-high') return second.price - first.price;
         return Number(first.number) - Number(second.number);
     });
 
-    grid.innerHTML = visibleProducts.map(product => `
-    <article class="product-card">
+    grid.innerHTML = visibleProducts.map((product, index) => `
+    <article class="product-card${product.outOfStock ? ' is-out-of-stock' : ''}">
       <div class="product-image">
                 <button class="product-preview" data-product="${product.number}" aria-label="View ${product.name} larger"><img src="${product.image}" alt="${product.name} 2 piece suit" loading="lazy"></button>
+                ${product.outOfStock ? '<span class="stock-badge">Out of stock</span>' : ''}
                 <button class="order-button" data-product="${product.number}" aria-label="${product.outOfStock ? `${product.name} is out of stock` : `Order ${product.name}`}" ${product.outOfStock ? 'disabled' : ''}>${product.outOfStock ? '—' : '↗'}</button>
       </div>
-            <div class="product-info"><div><h3>${product.name}</h3><p>${product.category}</p><div class="product-meta"><span>Size ${product.size}</span><strong>£${product.price}</strong></div></div><span class="product-number">${product.outOfStock ? 'Out of stock' : product.number}</span></div>
+            <div class="product-info"><div><h3>${product.name}</h3><p>${product.category}</p><div class="product-meta"><span>Size ${product.size}</span><strong>£${product.price}</strong></div></div><span class="product-number">${String(index + 1).padStart(2, '0')}</span></div>
     </article>
   `).join('');
     emptyState.hidden = visibleProducts.length > 0;
