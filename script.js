@@ -64,6 +64,17 @@ addressField.addEventListener('input', event => {
 
 function renderProducts() {
     const query = searchInput.value.trim().toLowerCase();
+    document.querySelectorAll('.filter').forEach(button => {
+        const category = button.dataset.filter;
+        const count = products.filter(product => {
+            const matchesCategory = category === 'all' || product.category === category;
+            const matchesSize = activeSize === 'all' || product.size === activeSize;
+            const matchesSearch = product.name.toLowerCase().includes(query) || product.category.toLowerCase().includes(query) || product.size.toLowerCase().includes(query);
+            return matchesCategory && matchesSize && matchesSearch;
+        }).length;
+        button.querySelector('small').textContent = count;
+    });
+
     const visibleProducts = products.filter(product => {
         const matchesFilter = activeFilter === 'all' || product.category === activeFilter;
         const matchesSize = activeSize === 'all' || product.size === activeSize;
